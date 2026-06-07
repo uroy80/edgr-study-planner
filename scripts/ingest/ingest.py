@@ -34,7 +34,7 @@ import pytesseract
 OLLAMA = os.environ.get("OLLAMA_HOST", "http://host.docker.internal:11434")
 EMBED_MODEL = os.environ.get("OLLAMA_EMBED_MODEL", "nomic-embed-text")
 MATERIALS_DIR = os.environ.get("STUDY_MATERIALS_DIR", "/app/data/study-materials")
-CHUNK, OVERLAP, MAX_PAGES = 900, 150, 40
+CHUNK, OVERLAP, MAX_PAGES = 1500, 200, 40
 WATERMARK = re.compile(r"(lOMoARcPSD|Downloaded by|studocu|coursehero|scanned by)", re.I)
 
 
@@ -93,15 +93,23 @@ def main():
     )
     cur = conn.cursor()
     resume = os.environ.get("RESUME") == "1"
-    extra = "AND sm.id NOT IN (SELECT DISTINCT material_id FROM note_chunks)" if resume else ""
-    if not resume:
+    subj = os.environ.get("SUBJECT_ID")
+    clauses = ["sm.category='notes'", "sm.file_path IS NOT NULL", "sm.mime_type='application/pdf'"]
+    params: list = []
+    if subj:  # single-subject run (for testing) — re-index just this subject
+        clauses.append("sm.subject_id = %s")
+        params.append(subj)
+        cur.execute("DELETE FROM note_chunks WHERE subject_id = %s", (subj,))
+        conn.commit()
+    elif resume:
+        clauses.append("sm.id NOT IN (SELECT DISTINCT material_id FROM note_chunks)")
+    else:
         cur.execute("TRUNCATE note_chunks")
         conn.commit()
     cur.execute(
-        f"""SELECT sm.id, sm.subject_id, sm.unit, sm.file_path, sm.title
-              FROM study_materials sm
-             WHERE sm.category='notes' AND sm.file_path IS NOT NULL
-               AND sm.mime_type='application/pdf' {extra}"""
+        "SELECT sm.id, sm.subject_id, sm.unit, sm.file_path, sm.title "
+        "FROM study_materials sm WHERE " + " AND ".join(clauses),
+        params,
     )
     rows = cur.fetchall()
     print(f"{len(rows)} note PDFs to ingest (resume={resume})", flush=True)

@@ -46,8 +46,11 @@ export async function embedText(text: string): Promise<number[]> {
 
 export async function chat(
   messages: Msg[],
-  opts: { json?: boolean; temperature?: number; timeoutMs?: number } = {},
+  opts: { json?: boolean; schema?: object; temperature?: number; timeoutMs?: number } = {},
 ): Promise<string> {
+  // Ollama structured output: `format` may be the string 'json' OR a full JSON
+  // schema object the model is forced to conform to.
+  const format = opts.schema ?? (opts.json ? 'json' : undefined);
   const j = await post(
     '/api/chat',
     {
@@ -55,7 +58,7 @@ export async function chat(
       messages,
       stream: false,
       think: false, // qwen3: skip the thinking phase for speed
-      ...(opts.json ? { format: 'json' } : {}),
+      ...(format ? { format } : {}),
       options: { temperature: opts.temperature ?? 0.3 },
     },
     opts.timeoutMs ?? 180_000,
