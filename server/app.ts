@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { studyRouter } from './routes/study.routes.js';
+import { analyzerRouter } from './routes/analyzer.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -20,8 +21,8 @@ export function createApp(): Express {
   // Study Corner — public catalog of notes / PYQs / syllabi.
   app.use('/api/study', studyRouter);
 
-  // Analyzer router mounted in a later phase:
-  //   app.use('/api/analyzer', analyzerRouter)
+  // Analyzer — notes-grounded roadmap + RAG chat (local Ollama).
+  app.use('/api/analyzer', analyzerRouter);
 
   // ── Static frontend + SPA fallback ───────────────────────────────
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
