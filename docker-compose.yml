@@ -1,0 +1,60 @@
+name: edgr-study-planner
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: sp-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-studyplanner}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-studyplanner}
+      POSTGRES_DB: ${POSTGRES_DB:-studyplanner}
+    volumes:
+      - sp_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-studyplanner}']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sp-ollama
+    volumes:
+      - sp_ollama:/root/.ollama
+    # Exposed on localhost so you can `ollama pull` from the host if desired.
+    ports:
+      - '127.0.0.1:11434:11434'
+    healthcheck:
+      test: ['CMD-SHELL', 'ollama list >/dev/null 2>&1 || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  api:
+    build: .
+    container_name: sp-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    environment:
+      NODE_ENV: production
+      PORT: 3100
+      DATABASE_URL: postgres://${POSTGRES_USER:-studyplanner}:${POSTGRES_PASSWORD:-studyplanner}@postgres:5432/${POSTGRES_DB:-studyplanner}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+      OLLAMA_CHAT_MODEL: ${OLLAMA_CHAT_MODEL:-qwen2.5:3b}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL:-nomic-embed-text}
+      STUDY_MATERIALS_DIR: /app/data/study-materials
+    ports:
+      - '127.0.0.1:3100:3100'
+    volumes:
+      - sp_materials:/app/data/study-materials
+    restart: unless-stopped
+
+volumes:
+  sp_pgdata:
+  sp_ollama:
+  sp_materials:

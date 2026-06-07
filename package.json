@@ -1,0 +1,45 @@
+{
+  "name": "edgr-study-planner",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Study planner — Study Corner + a notes-grounded Analyzer (roadmap + context chat), powered by a local LLM (Ollama).",
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "tsx watch server/index.ts",
+    "build": "tsc -b && vite build",
+    "build:server": "tsc -p server/tsconfig.json",
+    "start:server": "node dist/server/index.js",
+    "migrate": "tsx server/db/migrate.ts",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"server/**/*.ts\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "helmet": "^8.1.0",
+    "pg": "^8.20.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.12.0",
+    "@types/pg": "^8.18.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.0",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "prettier": "^3.8.1",
+    "tailwindcss": "^4.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vite": "^8.0.0"
+  }
+}

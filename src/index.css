@@ -1,0 +1,1135 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Theme Variables (Dark = default) ───────────────────── */
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --bg-primary: #15151f;
+  --bg-elevated: #21212e;
+  --bg-card: rgba(255, 255, 255, 0.058);
+  --bg-card-hover: rgba(255, 255, 255, 0.09);
+  --bg-subtle: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.12);
+  --bg-input: rgba(255, 255, 255, 0.06);
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.2);
+  --border-faint: rgba(255, 255, 255, 0.09);
+  --border-active: rgba(255, 255, 255, 0.16);
+
+  --text-primary: #f0f0f6;
+  --text-strong: rgba(255, 255, 255, 0.96);
+  --text-secondary: rgba(255, 255, 255, 0.8);
+  --text-tertiary: rgba(255, 255, 255, 0.62);
+  --text-muted: rgba(255, 255, 255, 0.56);
+  --text-faint: rgba(255, 255, 255, 0.46);
+  --text-ghost: rgba(255, 255, 255, 0.34);
+  --text-whisper: rgba(255, 255, 255, 0.24);
+
+  --accent-cyan: #06b6d4;
+  --accent-violet: #8b5cf6;
+
+  /* Attendance ring — saturated, theme-aware (warn/amber must read on light). */
+  --ring-good: #34d399;
+  --ring-warn: #fbbf24;
+  --ring-bad: #f87171;
+
+  /* Study-Corner page texture (cyber dot field) — colour the dots per theme so
+     they stay visible on both dark and light backgrounds. */
+  --sc-texture-ink: #8ae4f7;
+  --sc-texture-op: 0.5;
+  /* Gradient base for the guilloché-filled subject name (bright on dark). */
+  --sc-name-grad: linear-gradient(115deg, #eaf9ff 0%, #7deefb 45%, #25b6d6 100%);
+
+  /* Accent overlays (for badges, glows) */
+  --cyan-bg: rgba(6, 182, 212, 0.14);
+  --cyan-border: rgba(6, 182, 212, 0.28);
+  --cyan-text: #7deefb;
+  --violet-bg: rgba(139, 92, 246, 0.15);
+  --violet-border: rgba(139, 92, 246, 0.3);
+
+  --shadow-card: 0 8px 40px rgba(0, 0, 0, 0.28);
+
+  --grid-line: rgba(255, 255, 255, 0.035);
+  --grid-glow-cyan: rgba(6, 182, 212, 0.05);
+  --grid-glow-violet: rgba(139, 92, 246, 0.035);
+
+  --scrollbar-thumb: rgba(255, 255, 255, 0.08);
+  --scrollbar-hover: rgba(255, 255, 255, 0.15);
+
+  --skeleton-primary: rgba(255, 255, 255, 0.06);
+  --skeleton-secondary: rgba(255, 255, 255, 0.04);
+
+  /* Status colors */
+  --rose-bg: rgba(244, 63, 94, 0.12);
+  --rose-border: rgba(244, 63, 94, 0.28);
+  --rose-text: #fda4af;
+  --emerald-bg: rgba(16, 185, 129, 0.12);
+  --emerald-border: rgba(16, 185, 129, 0.28);
+  --emerald-text: #6ee7b7;
+  --amber-bg: rgba(245, 158, 11, 0.13);
+  --amber-border: rgba(245, 158, 11, 0.3);
+  --amber-text: #fcd34d;
+
+  /* Table sticky column */
+  --sticky-bg: rgba(20, 20, 28, 0.92);
+
+  /* Chart colors */
+  --chart-grid: rgba(255, 255, 255, 0.045);
+  --chart-tick: rgba(255, 255, 255, 0.28);
+  --chart-tick-faint: rgba(255, 255, 255, 0.17);
+  --chart-tooltip-bg: rgba(24, 24, 34, 0.96);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.1);
+  --chart-dot-stroke: #14141c;
+
+  /* Circular progress track */
+  --progress-track: rgba(255, 255, 255, 0.06);
+  --progress-bar-track: rgba(255, 255, 255, 0.05);
+  --progress-bar-border: rgba(255, 255, 255, 0.06);
+
+  /* Date input color scheme */
+  --color-scheme: dark;
+}
+
+/* ─── Light Theme (Claude UI inspired) ───────────────────── */
+.light {
+  --bg-primary: #f5f4ef;
+  --bg-elevated: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0efe9;
+  --bg-subtle: #eeecea;
+  --bg-active: #e5e3de;
+  --bg-input: #eeecea;
+  --bg-overlay: rgba(0, 0, 0, 0.35);
+
+  --border-subtle: #d8d5cd;
+  --border-hover: #b8b4aa;
+  --border-faint: #e0ddd6;
+  --border-active: #c8c4bb;
+
+  --text-primary: #1b1b18;
+  --text-strong: #1b1b18;
+  --text-secondary: #4a4a42;
+  --text-tertiary: #6b6b60;
+  --text-muted: #7c7b6e;
+  --text-faint: #8a897c;
+  --text-ghost: #9d9c8f;
+  --text-whisper: #b6b5a9;
+
+  --accent-cyan: #0e7490;
+  --accent-violet: #6d28d9;
+
+  /* Attendance ring — darker so it reads on the warm-white background. */
+  --ring-good: #16a34a;
+  --ring-warn: #d97706;
+  --ring-bad: #dc2626;
+
+  /* Tailwind accent text colours (text-amber-300, text-emerald-400, …) are
+     tuned for dark mode and wash out on the light background — especially their
+     /opacity variants. Re-point the underlying Tailwind colour variables so
+     EVERY text-/border- usage (base + /opacity) darkens to a legible value. */
+  --color-amber-200: #b45309;
+  --color-amber-300: #b45309;
+  --color-amber-400: #d97706;
+  --color-yellow-200: #a16207;
+  --color-yellow-300: #a16207;
+  --color-yellow-400: #ca8a04;
+  --color-green-300: #15803d;
+  --color-green-400: #16a34a;
+  --color-emerald-300: #047857;
+  --color-emerald-400: #059669;
+  --color-teal-300: #0f766e;
+  --color-teal-400: #0d9488;
+  --color-cyan-300: #0e7490;
+  --color-cyan-400: #0891b2;
+  --color-sky-300: #0369a1;
+  --color-sky-400: #0284c7;
+  --color-red-200: #dc2626;
+  --color-red-300: #dc2626;
+  --color-red-400: #dc2626;
+  --color-rose-300: #be123c;
+  --color-rose-400: #e11d48;
+  --color-orange-300: #c2410c;
+  --color-orange-400: #c2410c;
+  --color-violet-300: #6d28d9;
+  --color-violet-400: #7c3aed;
+  --color-purple-300: #7e22ce;
+  --color-purple-400: #9333ea;
+
+  /* Light mode: dark-teal dots on the warm-white background so the texture
+     reads (the dark-mode light-cyan dots would vanish here). */
+  --sc-texture-ink: #0e7490;
+  --sc-texture-op: 0.45;
+  /* Deep-teal gradient so the guilloché-filled name reads on the white card. */
+  --sc-name-grad: linear-gradient(115deg, #0e7490 0%, #0891b2 50%, #155e75 100%);
+
+  --cyan-bg: #e0f7fa;
+  --cyan-border: #80deea;
+  --cyan-text: #0e7490;
+  --violet-bg: #ede9fe;
+  --violet-border: #c4b5fd;
+
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 20px rgba(0, 0, 0, 0.05);
+
+  --grid-line: rgba(0, 0, 0, 0.05);
+  --grid-glow-cyan: rgba(14, 116, 144, 0.04);
+  --grid-glow-violet: rgba(109, 40, 217, 0.03);
+
+  --scrollbar-thumb: #c8c4bb;
+  --scrollbar-hover: #a3a299;
+
+  --skeleton-primary: #e5e3de;
+  --skeleton-secondary: #eeecea;
+
+  --rose-bg: #fff1f2;
+  --rose-border: #fecdd3;
+  --rose-text: #be123c;
+  --emerald-bg: #ecfdf5;
+  --emerald-border: #a7f3d0;
+  --emerald-text: #047857;
+  --amber-bg: #fffbeb;
+  --amber-border: #fde68a;
+  --amber-text: #b45309;
+
+  --sticky-bg: #fafaf8;
+
+  --chart-grid: #e5e3de;
+  --chart-tick: #6b6b60;
+  --chart-tick-faint: #8b8b7e;
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #d8d5cd;
+  --chart-dot-stroke: #ffffff;
+
+  --progress-track: #e5e3de;
+  --progress-bar-track: #eeecea;
+  --progress-bar-border: #d8d5cd;
+
+  --color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family:
+    'Inter',
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  color-scheme: var(--color-scheme);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ─── Transparent Grid Background ────────────────────────── */
+.grid-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.grid-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, var(--grid-glow-cyan), transparent),
+    radial-gradient(ellipse 40% 40% at 80% 100%, var(--grid-glow-violet), transparent);
+}
+
+/* Legacy dot-grid — redirect to new grid */
+.dot-grid {
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ─── Glass Card Utility ─────────────────────────────────── */
+.glass-card {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: var(--border-hover);
+}
+
+/* ─── Glass Background for full-page layouts ──────────── */
+.glass-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.glass-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, var(--grid-glow-cyan), transparent),
+    radial-gradient(ellipse 40% 40% at 80% 100%, var(--grid-glow-violet), transparent);
+}
+
+/* ─── Scrollbar Styling ──────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}
+
+/* ─── Smooth page transitions ────────────────────────────── */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+/* ─── Theme transition ───────────────────────────────────── */
+html.light,
+html.dark {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+
+/* ─── Light theme: Override Tailwind accent colors ───────── */
+/* Pastel colors (cyan-300, red-300, violet-300) are invisible on light bg */
+/* Replace with darker, more saturated variants */
+.light .text-cyan-300 {
+  color: #0e7490 !important;
+}
+.light .text-cyan-400 {
+  color: #0891b2 !important;
+}
+.light .text-red-300 {
+  color: #dc2626 !important;
+}
+.light .text-violet-300 {
+  color: #7c3aed !important;
+}
+.light .text-rose-400 {
+  color: #e11d48 !important;
+}
+.light .text-emerald-400 {
+  color: #059669 !important;
+}
+.light .text-amber-400 {
+  color: #d97706 !important;
+}
+.light .text-rose-300 {
+  color: #e11d48 !important;
+}
+
+/* Accent backgrounds: make them solid, more visible */
+.light .bg-cyan-500\/20 {
+  background: #e0f7fa !important;
+}
+.light .bg-cyan-500\/10 {
+  background: #ecfeff !important;
+}
+.light .bg-cyan-500\/\[0\.04\] {
+  background: #f0fdfa !important;
+}
+.light .bg-cyan-500\/\[0\.08\] {
+  background: #e0f7fa !important;
+}
+.light .bg-cyan-500\/\[0\.12\] {
+  background: #cffafe !important;
+}
+.light .bg-red-500\/20 {
+  background: #fff1f2 !important;
+}
+.light .bg-violet-500\/20 {
+  background: #ede9fe !important;
+}
+.light .bg-rose-500\/\[0\.06\] {
+  background: #fff1f2 !important;
+}
+
+/* Accent borders */
+.light .border-cyan-400\/20 {
+  border-color: #67e8f9 !important;
+}
+.light .border-cyan-400\/30 {
+  border-color: #22d3ee !important;
+}
+.light .border-cyan-500\/10 {
+  border-color: #a5f3fc !important;
+}
+.light .border-cyan-500\/15 {
+  border-color: #67e8f9 !important;
+}
+.light .border-cyan-500\/20 {
+  border-color: #22d3ee !important;
+}
+.light .border-red-400\/20 {
+  border-color: #fecaca !important;
+}
+.light .border-violet-400\/20 {
+  border-color: #c4b5fd !important;
+}
+.light .border-rose-500\/20 {
+  border-color: #fecdd3 !important;
+}
+
+/* Emerald / amber accent backgrounds */
+.light .bg-emerald-500\/\[0\.06\] {
+  background: #ecfdf5 !important;
+}
+.light .border-emerald-500\/10 {
+  border-color: #a7f3d0 !important;
+}
+.light .text-emerald-400\/70 {
+  color: #059669 !important;
+}
+.light .text-emerald-300\/80 {
+  color: #047857 !important;
+}
+.light .text-emerald-400\/60 {
+  color: #059669 !important;
+}
+.light .bg-amber-500\/\[0\.06\] {
+  background: #fffbeb !important;
+}
+.light .border-amber-500\/10 {
+  border-color: #fde68a !important;
+}
+.light .border-amber-500\/15 {
+  border-color: #fcd34d !important;
+}
+
+/* Cyan text with opacity */
+.light .text-cyan-400\/80 {
+  color: #0891b2 !important;
+}
+.light .text-cyan-400\/60 {
+  color: #0e7490 !important;
+}
+.light .text-cyan-400\/40 {
+  color: #155e75 !important;
+}
+.light .text-cyan-300\/80 {
+  color: #0891b2 !important;
+}
+
+/* Rose / logout button */
+.light .text-rose-400\/80 {
+  color: #e11d48 !important;
+}
+.light .text-rose-300\/80 {
+  color: #be123c !important;
+}
+.light .border-rose-500\/40 {
+  border-color: #fb7185 !important;
+}
+
+/* Gradient fix for logo text — dark text in light mode */
+.light .from-white\/90 {
+  --tw-gradient-from: #1b1b18 !important;
+}
+.light .to-white\/60 {
+  --tw-gradient-to: #4a4a42 !important;
+}
+
+/* Logo + button gradients (Login, Attendance progress bars) */
+.light .from-cyan-400 {
+  --tw-gradient-from: #0891b2 !important;
+}
+.light .to-violet-400 {
+  --tw-gradient-to: #7c3aed !important;
+}
+.light .from-cyan-500\/80 {
+  --tw-gradient-from: rgba(6, 182, 212, 0.85) !important;
+}
+.light .to-violet-500\/80 {
+  --tw-gradient-to: rgba(124, 58, 237, 0.85) !important;
+}
+.light .from-cyan-500\/20 {
+  --tw-gradient-from: rgba(14, 116, 144, 0.12) !important;
+}
+.light .to-violet-500\/20 {
+  --tw-gradient-to: rgba(109, 40, 217, 0.12) !important;
+}
+.light .from-green-400 {
+  --tw-gradient-from: #059669 !important;
+}
+.light .to-cyan-400 {
+  --tw-gradient-to: #0891b2 !important;
+}
+.light .from-red-400 {
+  --tw-gradient-from: #dc2626 !important;
+}
+.light .to-amber-400 {
+  --tw-gradient-to: #d97706 !important;
+}
+
+/* Missing text color overrides */
+.light .text-red-400\/80 {
+  color: #b91c1c !important;
+}
+.light .text-cyan-400\/50 {
+  color: rgba(14, 116, 144, 0.7) !important;
+}
+
+/* Calendar active day ring */
+.light .ring-cyan-400\/10 {
+  --tw-ring-color: rgba(14, 116, 144, 0.15) !important;
+}
+
+/* Hover glow on bottom nav */
+.light .shadow-\[0_0_6px_rgba\(6\,182\,212\,0\.6\)\] {
+  box-shadow: 0 0 6px rgba(14, 116, 144, 0.4) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Site-wide background accent — a single minimal flowing guilloché wave
+ * anchored to the bottom of the viewport. Rendered once per app shell
+ * (next to .grid-bg). Keeps its own teal→green gradient (reads on dark
+ * AND light); --sc-texture-op tunes strength per theme.
+ * ───────────────────────────────────────────────────────────── */
+.guilloche-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--sc-texture-op);
+  background-image: url('/ornaments/bg-wave.png');
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 100% auto;
+}
+
+/* Profile avatar guilloché seal — a certificate-style rosette medallion framing
+   the avatar. Theme-aware: bright cyan on dark, deep teal on light. */
+.profile-seal {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.85;
+  background-image: url('/ornaments/seal-dark.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.light .profile-seal {
+  background-image: url('/ornaments/seal-light.png');
+}
+
+/* Subject name "filled" with the guilloché engraving. The rosette-fan pattern
+   shimmers over a theme-aware gradient (bright on dark, deep-teal on light). */
+.sc-guilloche-name {
+  background-image: url('/ornaments/ornament-fans.png'), var(--sc-name-grad);
+  background-size:
+    280px auto,
+    100% 100%;
+  background-position: center, center;
+  background-repeat: repeat, no-repeat;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  filter: drop-shadow(0 1px 7px rgba(6, 182, 212, 0.28));
+}
+.light .sc-guilloche-name {
+  filter: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Study Corner — entrance + interaction polish
+ * ───────────────────────────────────────────────────────────── */
+@keyframes sc-fade-up {
+  /* opacity ONLY — no transform anywhere, so nothing ever promotes a
+     compositing layer that would disable backdrop-filter on the tiles. */
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.sc-anim {
+  animation: sc-fade-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Stagger the first dozen items for a cascading reveal. */
+.sc-anim:nth-child(1) {
+  animation-delay: 0ms;
+}
+.sc-anim:nth-child(2) {
+  animation-delay: 35ms;
+}
+.sc-anim:nth-child(3) {
+  animation-delay: 70ms;
+}
+.sc-anim:nth-child(4) {
+  animation-delay: 105ms;
+}
+.sc-anim:nth-child(5) {
+  animation-delay: 140ms;
+}
+.sc-anim:nth-child(6) {
+  animation-delay: 175ms;
+}
+.sc-anim:nth-child(7) {
+  animation-delay: 210ms;
+}
+.sc-anim:nth-child(8) {
+  animation-delay: 245ms;
+}
+.sc-anim:nth-child(9) {
+  animation-delay: 280ms;
+}
+.sc-anim:nth-child(10) {
+  animation-delay: 315ms;
+}
+.sc-anim:nth-child(11) {
+  animation-delay: 350ms;
+}
+.sc-anim:nth-child(12) {
+  animation-delay: 385ms;
+}
+
+/* Subject card — lift + accent ring on hover. */
+.sc-card {
+  position: relative;
+  /* frosted glass — identical to the glass tiles on other pages
+     (--bg-card translucency + backdrop blur). */
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+  /* NOTE: no `will-change: transform` — it promotes a compositing layer that
+     disables backdrop-filter (the frosted-glass blur would stop working). */
+}
+.sc-card:hover {
+  /* shadow + border glow instead of a transform lift, so backdrop-filter
+     (the frosted glass) keeps working while hovered. */
+  border-color: var(--accent-cyan) !important;
+  box-shadow: 0 12px 34px -14px rgba(6, 182, 212, 0.4);
+}
+.sc-card:active {
+  box-shadow: 0 4px 14px -8px rgba(6, 182, 212, 0.3);
+}
+
+/* Material row — slide accent + lift on hover. */
+.sc-row {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease;
+}
+.sc-row:hover {
+  /* no transform — keep backdrop-filter active on hover */
+  background: var(--bg-card-hover) !important;
+  border-color: var(--border-hover) !important;
+}
+
+/* Gradient wordmark for the section title. */
+.sc-title {
+  background: linear-gradient(100deg, var(--text-strong) 30%, var(--accent-cyan) 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-anim,
+  .sc-card,
+  .sc-row {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Guilloché — very slow watch-dial rotation. */
+@keyframes guilloche-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.guilloche-spin {
+  animation: guilloche-spin 90s linear infinite;
+  transform-origin: 50% 50%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .guilloche-spin {
+    animation: none !important;
+  }
+}
+
+/* ─── Timetable slot colors (grid view) ──────────────────── */
+/* These bg-X/25 + text-X-300 are invisible on light bg */
+.light .bg-sky-500\/25 {
+  background: #e0f2fe !important;
+}
+.light .text-sky-300 {
+  color: #0369a1 !important;
+}
+.light .bg-teal-500\/25 {
+  background: #ccfbf1 !important;
+}
+.light .text-teal-300 {
+  color: #0f766e !important;
+}
+.light .bg-violet-500\/25 {
+  background: #ede9fe !important;
+}
+.light .text-violet-300 {
+  color: #6d28d9 !important;
+}
+.light .bg-amber-500\/25 {
+  background: #fef3c7 !important;
+}
+.light .text-amber-300 {
+  color: #b45309 !important;
+}
+.light .bg-rose-500\/25 {
+  background: #ffe4e6 !important;
+}
+.light .text-rose-300 {
+  color: #be123c !important;
+}
+.light .bg-cyan-500\/25 {
+  background: #cffafe !important;
+}
+.light .text-cyan-300 {
+  color: #0e7490 !important;
+}
+.light .bg-purple-500\/25 {
+  background: #f3e8ff !important;
+}
+.light .text-purple-300 {
+  color: #7e22ce !important;
+}
+.light .bg-orange-500\/25 {
+  background: #fff7ed !important;
+}
+.light .text-orange-300 {
+  color: #c2410c !important;
+}
+.light .bg-emerald-500\/25 {
+  background: #ecfdf5 !important;
+}
+.light .text-emerald-300 {
+  color: #047857 !important;
+}
+.light .bg-cyan-500\/30 {
+  background: #a5f3fc !important;
+}
+
+/* Grid cell type labels */
+.light .text-orange-400\/80 {
+  color: #c2410c !important;
+}
+.light .text-emerald-400\/80 {
+  color: #047857 !important;
+}
+
+/* Grid cell room text */
+.light .text-sky-400\/60 {
+  color: #0369a1 !important;
+}
+.light .text-teal-400\/60 {
+  color: #0f766e !important;
+}
+.light .text-violet-400\/60 {
+  color: #6d28d9 !important;
+}
+.light .text-amber-400\/60 {
+  color: #b45309 !important;
+}
+.light .text-rose-400\/60 {
+  color: #be123c !important;
+}
+.light .text-cyan-400\/60 {
+  color: #0e7490 !important;
+}
+.light .text-purple-400\/60 {
+  color: #7e22ce !important;
+}
+.light .text-orange-400\/60 {
+  color: #c2410c !important;
+}
+.light .text-emerald-400\/60 {
+  color: #047857 !important;
+}
+
+/* Day-view type badges */
+.light .bg-orange-500\/15 {
+  background: #fff7ed !important;
+}
+.light .text-orange-400\/90 {
+  color: #c2410c !important;
+}
+.light .border-orange-500\/20 {
+  border-color: #fdba74 !important;
+}
+.light .bg-emerald-500\/15 {
+  background: #ecfdf5 !important;
+}
+.light .text-emerald-400\/90 {
+  color: #047857 !important;
+}
+.light .border-emerald-500\/20 {
+  border-color: #6ee7b7 !important;
+}
+
+/* Day-view time badge backgrounds & borders */
+.light .bg-emerald-500\/\[0\.06\] {
+  background: #ecfdf5 !important;
+}
+.light .border-emerald-500\/15 {
+  border-color: #6ee7b7 !important;
+}
+.light .bg-rose-500\/\[0\.06\] {
+  background: #fff1f2 !important;
+}
+.light .border-rose-500\/15 {
+  border-color: #fda4af !important;
+}
+.light .text-rose-400\/70 {
+  color: #e11d48 !important;
+}
+.light .text-rose-300\/80 {
+  color: #be123c !important;
+}
+
+/* Light mode cards get subtle shadow instead of glass effect */
+.light .backdrop-blur-sm,
+.light .backdrop-blur-xl,
+.light .backdrop-blur {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Light mode: give cards a soft shadow for separation */
+.light .bg-\[var\(--bg-card\)\] {
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* Light mode: background blobs — warmer, more visible pastel tints */
+.light .bg-cyan-500\/\[0\.04\] {
+  background: rgba(14, 116, 144, 0.06) !important;
+}
+.light .bg-violet-500\/\[0\.04\] {
+  background: rgba(109, 40, 217, 0.05) !important;
+}
+
+/* Light mode: Sign-in button — deeper gradient, no glow shadow */
+.light .shadow-\[0_0_30px_rgba\(6\,182\,212\,0\.2\)\] {
+  box-shadow: 0 2px 12px rgba(14, 116, 144, 0.15) !important;
+}
+.light .shadow-\[0_0_40px_rgba\(6\,182\,212\,0\.3\)\] {
+  box-shadow: 0 4px 16px rgba(14, 116, 144, 0.2) !important;
+}
+
+/* Light mode: emerald dot pulse */
+.light .bg-emerald-400 {
+  background: #059669 !important;
+}
+
+/* Light mode: attendance progress bar gradients — richer */
+.light .from-green-400 {
+  --tw-gradient-from: #059669 !important;
+}
+.light .to-cyan-400 {
+  --tw-gradient-to: #0891b2 !important;
+}
+.light .from-red-400 {
+  --tw-gradient-from: #dc2626 !important;
+}
+.light .to-amber-400 {
+  --tw-gradient-to: #d97706 !important;
+}
+
+/* Light mode: rose error card */
+.light .bg-rose-500\/10 {
+  background: #fff1f2 !important;
+}
+.light .text-rose-400 {
+  color: #e11d48 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * BranchGlyph — decorative line-art draw-in animation
+ * ───────────────────────────────────────────────────────────── */
+@keyframes branch-glyph-draw {
+  0% {
+    stroke-dasharray: 0 200;
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.75;
+  }
+  100% {
+    stroke-dasharray: 200 0;
+    opacity: 1;
+  }
+}
+.branch-glyph-animate line,
+.branch-glyph-animate circle,
+.branch-glyph-animate ellipse,
+.branch-glyph-animate polyline {
+  animation: branch-glyph-draw 1.4s ease-out both;
+}
+.branch-glyph-animate ellipse:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+.branch-glyph-animate ellipse:nth-of-type(2) {
+  animation-delay: 140ms;
+}
+.branch-glyph-animate ellipse:nth-of-type(3) {
+  animation-delay: 280ms;
+}
+
+/* Continuous rotation — used by `sync` BranchGlyph as a fallback when
+   the variant-specific classes below are unavailable. */
+@keyframes branch-glyph-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.branch-glyph-spin {
+  animation: branch-glyph-spin 1.6s linear infinite;
+  transform-origin: 50% 50%;
+}
+
+/* Layered sync glyph — outer ring, inner ring, centre pulse each move
+   on independent timelines for a richer, less "single-element-spinning"
+   feel. transform-box: fill-box anchors each rotation around the
+   element's own bounding-box centre instead of the SVG viewport. */
+@keyframes sync-rotate-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes sync-rotate-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+@keyframes sync-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.18);
+  }
+}
+.sync-arc-outer {
+  animation: sync-rotate-cw 1.2s linear infinite;
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+}
+.sync-arc-inner {
+  animation: sync-rotate-ccw 1.8s linear infinite;
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+}
+.sync-center-pulse {
+  animation: sync-pulse 1.5s ease-in-out infinite;
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-glyph-spin {
+    animation-duration: 4s;
+  }
+  .sync-arc-outer {
+    animation-duration: 3.5s;
+  }
+  .sync-arc-inner {
+    animation-duration: 5s;
+  }
+  .sync-center-pulse {
+    animation-duration: 3s;
+  }
+}
+
+/* Rocket BranchGlyph variant — body bobs, flame flickers, smoke
+   puffs trail out the bottom and dissipate.  All timed so the puffs
+   keep emerging continuously as long as the loader is mounted. */
+@keyframes rocket-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+}
+@keyframes rocket-flame-flicker {
+  0%,
+  100% {
+    transform: scaleY(0.85);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(1.15);
+    opacity: 1;
+  }
+}
+@keyframes rocket-puff-drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(0, 12px) scale(1.5);
+  }
+}
+.rocket-body {
+  animation: rocket-bob 1.3s ease-in-out infinite;
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+}
+.rocket-flame {
+  animation: rocket-flame-flicker 280ms ease-in-out infinite;
+  transform-origin: 50% 0%;
+  transform-box: fill-box;
+}
+.rocket-puff {
+  animation: rocket-puff-drift 1.4s ease-out infinite;
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rocket-body {
+    animation-duration: 4s;
+  }
+  .rocket-flame {
+    animation-duration: 1.2s;
+  }
+  .rocket-puff {
+    animation-duration: 4s;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * LoginPage — "Welcome to" kicker + wordmark entrance
+ * ───────────────────────────────────────────────────────────── */
+@keyframes login-welcome-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    letter-spacing: 0.55em;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    letter-spacing: 0.4em;
+  }
+}
+@keyframes login-wordmark-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.login-welcome > div:first-child {
+  animation: login-welcome-fade 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.login-wordmark {
+  animation: login-wordmark-rise 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.25s both;
+}
+.login-welcome > p {
+  animation: login-welcome-fade 1s ease-out 0.65s both;
+}
+.branch-glyph-animate circle:nth-of-type(1) {
+  animation-delay: 0ms;
+}
+.branch-glyph-animate circle:nth-of-type(2) {
+  animation-delay: 80ms;
+}
+.branch-glyph-animate circle:nth-of-type(3) {
+  animation-delay: 200ms;
+}
+.branch-glyph-animate circle:nth-of-type(4) {
+  animation-delay: 320ms;
+}
+.branch-glyph-animate circle:nth-of-type(5) {
+  animation-delay: 440ms;
+}
+.branch-glyph-animate line:nth-of-type(1) {
+  animation-delay: 600ms;
+}
+.branch-glyph-animate line:nth-of-type(2) {
+  animation-delay: 720ms;
+}
+.branch-glyph-animate line:nth-of-type(3) {
+  animation-delay: 840ms;
+}
+.branch-glyph-animate line:nth-of-type(4) {
+  animation-delay: 960ms;
+}
