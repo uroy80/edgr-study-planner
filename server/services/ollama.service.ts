@@ -46,7 +46,7 @@ export async function embedText(text: string): Promise<number[]> {
 
 export async function chat(
   messages: Msg[],
-  opts: { json?: boolean; schema?: object; temperature?: number; timeoutMs?: number } = {},
+  opts: { json?: boolean; schema?: object; temperature?: number; numCtx?: number; timeoutMs?: number } = {},
 ): Promise<string> {
   // Ollama structured output: `format` may be the string 'json' OR a full JSON
   // schema object the model is forced to conform to.
@@ -59,7 +59,10 @@ export async function chat(
       stream: false,
       think: false, // qwen3: skip the thinking phase for speed
       ...(format ? { format } : {}),
-      options: { temperature: opts.temperature ?? 0.3 },
+      options: {
+        temperature: opts.temperature ?? 0.3,
+        ...(opts.numCtx ? { num_ctx: opts.numCtx } : {}),
+      },
     },
     opts.timeoutMs ?? 180_000,
   );

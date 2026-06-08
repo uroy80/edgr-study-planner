@@ -174,7 +174,7 @@ Return the roadmap JSON now.`;
         { role: 'system', content: sys },
         { role: 'user', content: user },
       ],
-      { schema: ROADMAP_SCHEMA, temperature: 0.2, timeoutMs: 240_000 },
+      { schema: ROADMAP_SCHEMA, temperature: 0.2, numCtx: 8192, timeoutMs: 240_000 },
     );
     let units = normalizeUnits(extractJson(raw) ?? (() => { try { return JSON.parse(raw); } catch { return null; } })());
     if (!units.length) throw new Error('roadmap generation produced no usable units');
@@ -191,27 +191,46 @@ Return the roadmap JSON now.`;
   async answer(subjectId: string, question: string) {
     const meta = await analyzerRepository.subjectMeta(subjectId);
     if (!meta) return null;
-    const qvec = await embedText(question);
-    const chunks = await analyzerRepository.topChunks(subjectId, toVectorLiteral(qvec), 6);
+    const q = question.trim();
+
+    const qvec = await embedText(q);
+    const chunks = await analyzerRepository.topChunks(subjectId, toVectorLiteral(qvec), 8);
     if (chunks.length === 0) {
-      return { answer: "I don't have indexed notes for this subject yet, so I can't answer from them.", citations: [] };
+      return {
+        answer: `This subject's notes aren't indexed yet, so I can't answer from them.`,
+        citations: [],
+      };
     }
+
+    // Relevance gate — if even the closest note is far from the question, it's
+    // off-topic or not covered. Refuse instead of hallucinating. (cosine dist)
+    const best = Math.min(...chunks.map((c) => c.distance));
+    if (best > 0.85) {
+      return {
+        answer: `I can only help with **${meta.name}** study questions answered from its notes — and I couldn't find anything relevant in them. Try asking about a topic from this subject.`,
+        citations: [],
+      };
+    }
+
     const context = chunks
       .map((c, i) => `[${i + 1}] (${c.title}${c.unit != null ? `, Unit ${c.unit}` : ''})\n${c.content}`)
       .join('\n\n')
-      .slice(0, 9000);
+      .slice(0, 12000);
 
-    const sys = `You answer questions using ONLY the provided notes excerpts from a single subject.
-- If the answer is not in the excerpts, say you couldn't find it in the notes — do not use outside knowledge.
-- Be concise and accurate. Cite the excerpt numbers you used, like [1], [2].`;
-    const user = `NOTES EXCERPTS:\n${context}\n\nQUESTION: ${question}`;
+    const sys = `You are a focused study assistant for the subject "${meta.name}".
+STRICT RULES:
+- Answer ONLY academic questions about "${meta.name}", using ONLY the NOTES excerpts below.
+- If the question is not a study question about this subject (small talk, other domains, personal/general questions, current events, coding help unrelated to the notes, etc.), refuse with exactly: "I can only help with ${meta.name} study questions based on the notes."
+- If it IS a study question but the answer is not in the excerpts, say you couldn't find it in the notes. NEVER use outside knowledge.
+- When you do answer: be clear, accurate and reasonably thorough; explain step by step where helpful, and cite the excerpt numbers you used like [1], [2].`;
+    const user = `NOTES EXCERPTS:\n${context}\n\nQUESTION: ${q}`;
 
     const answer = await chat(
       [
         { role: 'system', content: sys },
         { role: 'user', content: user },
       ],
-      { temperature: 0.2, timeoutMs: 240_000 },
+      { temperature: 0.2, numCtx: 8192, timeoutMs: 240_000 },
     );
 
     const seen = new Set<string>();

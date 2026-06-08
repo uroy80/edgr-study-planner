@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api/client';
 import { Spinner } from '../components/Spinner';
 import type { AnalyzerSubjectCard, SubjectRoadmap, ChatCitation } from '../api/types';
@@ -205,14 +205,30 @@ export function AnalyzerPage() {
   const [notReady, setNotReady] = useState(false);
   const [sel, setSel] = useState<AnalyzerSubjectCard | null>(null);
   const [tab, setTab] = useState<'roadmap' | 'chat'>('roadmap');
+  const [semester, setSemester] = useState<number | null>(null);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     api.analyzerSubjects().then((r) => {
-      if (r.success) setSubjects(r.data.subjects);
-      else setNotReady(true);
+      if (r.success) {
+        setSubjects(r.data.subjects);
+        const sems = [...new Set(r.data.subjects.map((s) => s.semester))].sort((a, b) => a - b);
+        setSemester(sems[0] ?? null);
+      } else setNotReady(true);
       setLoading(false);
     });
   }, []);
+
+  const semesters = useMemo(
+    () => [...new Set(subjects.map((s) => s.semester))].sort((a, b) => a - b),
+    [subjects],
+  );
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return subjects.filter(
+      (s) => (semester == null || s.semester === semester) && (!q || s.name.toLowerCase().includes(q)),
+    );
+  }, [subjects, semester, query]);
 
   if (loading) return <div className="max-w-3xl mx-auto px-4 pt-6"><Spinner label="Loading analyzer…" /></div>;
 
@@ -266,11 +282,41 @@ export function AnalyzerPage() {
       <p className="text-xs mt-0.5 mb-4" style={{ color: 'var(--text-faint)' }}>
         Notes-grounded roadmaps &amp; chat — pick a subject
       </p>
-      {subjects.length === 0 ? (
-        <p className="text-center py-16 text-sm" style={{ color: 'var(--text-faint)' }}>No subjects indexed yet.</p>
+
+      {/* semester tabs — like Study Corner */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-3 -mx-1 px-1">
+        {semesters.map((s) => (
+          <button
+            key={s}
+            onClick={() => setSemester(s)}
+            className="px-4 py-1.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all active:scale-95"
+            style={
+              s === semester
+                ? { background: 'var(--accent-cyan)', color: '#001014' }
+                : { background: 'var(--bg-subtle)', color: 'var(--text-muted)', border: '1px solid var(--border-faint)' }
+            }
+          >
+            Sem {s}
+          </button>
+        ))}
+      </div>
+
+      {/* search */}
+      <input
+        placeholder="Search subjects…"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        className="w-full px-3.5 py-2 rounded-xl text-sm outline-none mb-4 focus:ring-2 focus:ring-[var(--accent-cyan)]/40"
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border-faint)', color: 'var(--text-primary)' }}
+      />
+
+      {filtered.length === 0 ? (
+        <p className="text-center py-16 text-sm" style={{ color: 'var(--text-faint)' }}>
+          {subjects.length === 0 ? 'No subjects indexed yet.' : 'No subjects match.'}
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-          {subjects.map((s) => (
+          {filtered.map((s) => (
             <button
               key={s.id}
               onClick={() => { setSel(s); setTab('roadmap'); }}
@@ -281,7 +327,7 @@ export function AnalyzerPage() {
                 <span>Sem {s.semester}</span>
                 <span>· {s.noteCount} notes</span>
                 {s.hasRoadmap && <span style={{ color: 'var(--violet-text)' }}>· roadmap ✓</span>}
-                {s.indexed && <span style={{ color: 'var(--emerald-text)' }}>· indexed</span>}
+                {s.indexed ? <span style={{ color: 'var(--emerald-text)' }}>· indexed</span> : <span style={{ color: 'var(--text-ghost)' }}>· indexing…</span>}
               </div>
             </button>
           ))}

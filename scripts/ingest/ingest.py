@@ -28,7 +28,7 @@ Set RESUME=1 to only ingest notes not already chunked.
 import os, re, sys, time, json, urllib.request, urllib.error
 import psycopg2
 from pdfminer.high_level import extract_text as pdf_text
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path, pdfinfo_from_path
 import pytesseract
 
 OLLAMA = os.environ.get("OLLAMA_HOST", "http://host.docker.internal:11434")
@@ -53,11 +53,23 @@ def extract(path):
         raw = ""
     if len(clean(raw)) >= 400:
         return clean(raw)
-    try:  # OCR fallback for scanned notes
-        imgs = convert_from_path(path, dpi=220, first_page=1, last_page=MAX_PAGES)
-        return clean("\n".join(pytesseract.image_to_string(im.convert("L")) for im in imgs))
+    # OCR fallback — ONE page at a time to bound memory (loading a whole
+    # scanned PDF at once is what OOM-killed the ingest on a 16GB Mac).
+    try:
+        info = pdfinfo_from_path(path)
+        pages = min(int(info.get("Pages", 0)) or MAX_PAGES, MAX_PAGES)
     except Exception:
-        return clean(raw)
+        pages = MAX_PAGES
+    out = []
+    for p in range(1, pages + 1):
+        try:
+            imgs = convert_from_path(path, dpi=180, first_page=p, last_page=p)
+            if imgs:
+                out.append(pytesseract.image_to_string(imgs[0].convert("L")))
+            imgs = None
+        except Exception:
+            continue
+    return clean("\n".join(out)) or clean(raw)
 
 
 def chunkify(text):
