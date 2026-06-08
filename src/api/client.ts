@@ -9,7 +9,7 @@ import type {
 
 const BASE = ''; // same-origin
 const TIMEOUT_MS = 20_000;
-const LONG_TIMEOUT_MS = 180_000; // roadmap/chat generation can be slow on local LLM
+const LONG_TIMEOUT_MS = 360_000; // per-unit roadmap generation on a local LLM can take a few minutes
 
 async function request<T>(
   path: string,

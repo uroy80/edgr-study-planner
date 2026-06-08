@@ -81,6 +81,24 @@ export class AnalyzerRepository {
     return r.rows;
   }
 
+  /** Distinct numbered units present in this subject's note chunks. */
+  async unitNumbers(subjectId: string): Promise<number[]> {
+    const r = await query<{ unit: number }>(
+      `SELECT DISTINCT unit FROM note_chunks WHERE subject_id = $1 AND unit IS NOT NULL ORDER BY unit ASC`,
+      [subjectId],
+    );
+    return r.rows.map((x) => x.unit);
+  }
+
+  /** First N chunks of one unit, for per-unit roadmap generation. */
+  async chunksForUnit(subjectId: string, unit: number, limit = 12): Promise<string[]> {
+    const r = await query<{ content: string }>(
+      `SELECT content FROM note_chunks WHERE subject_id = $1 AND unit = $2 ORDER BY chunk_index ASC LIMIT $3`,
+      [subjectId, unit, limit],
+    );
+    return r.rows.map((x) => x.content);
+  }
+
   /** Top-k chunks by cosine similarity to a query embedding. */
   async topChunks(subjectId: string, queryVecLiteral: string, k = 6): Promise<RetrievedChunk[]> {
     const r = await query<RetrievedChunk & { distance: string }>(

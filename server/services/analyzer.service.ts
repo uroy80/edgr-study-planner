@@ -32,6 +32,27 @@ const ROADMAP_SCHEMA = {
   required: ['units'],
 } as const;
 
+// Schema for a single unit (per-unit roadmap generation).
+const UNIT_SCHEMA = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    summary: { type: 'string' },
+    topics: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string' },
+          subtopics: { type: 'array', items: { type: 'string' } },
+        },
+        required: ['title', 'subtopics'],
+      },
+    },
+  },
+  required: ['title', 'topics'],
+} as const;
+
 // ── helpers ──────────────────────────────────────────────────────────
 function extractJson(raw: string): unknown {
   const s = raw.indexOf('{');
@@ -111,6 +132,51 @@ function normalizeUnits(input: unknown): RUnit[] {
   return units.slice(0, 10);
 }
 
+function normalizeOneUnit(raw: string, unitNum: number): RUnit | null {
+  let o: unknown = extractJson(raw);
+  if (!o) {
+    try {
+      o = JSON.parse(raw);
+    } catch {
+      o = null;
+    }
+  }
+  if (!o || typeof o !== 'object') return null;
+  const oo = o as Record<string, unknown>;
+  const topics: RTopic[] = [];
+  const tRaw = Array.isArray(oo.topics) ? oo.topics : [];
+  for (const t of tRaw) {
+    if (typeof t === 'string') {
+      const tt = t.trim();
+      if (tt) topics.push({ title: tt.slice(0, 200), subtopics: [] });
+      continue;
+    }
+    if (!t || typeof t !== 'object') continue;
+    const to = t as Record<string, unknown>;
+    const ttitle = String(to.title ?? to.name ?? '').trim();
+    if (!ttitle) continue;
+    const subsRaw = Array.isArray(to.subtopics)
+      ? to.subtopics
+      : Array.isArray((to as Record<string, unknown>).subTopics)
+        ? ((to as Record<string, unknown>).subTopics as unknown[])
+        : [];
+    const subs = (subsRaw as unknown[]).map((x) => String(x).trim()).filter(Boolean).slice(0, 8);
+    topics.push({ title: ttitle.slice(0, 200), subtopics: subs });
+  }
+  if (!topics.length) return null;
+  const rawTitle = String(oo.title ?? oo.name ?? '').trim();
+  const title = !rawTitle
+    ? `Unit ${unitNum}`
+    : /^unit\b/i.test(rawTitle)
+      ? rawTitle
+      : `Unit ${unitNum}: ${rawTitle}`;
+  return {
+    title: title.slice(0, 200),
+    summary: String(oo.summary ?? oo.description ?? '').trim().slice(0, 500),
+    topics: topics.slice(0, 8),
+  };
+}
+
 // ── service ──────────────────────────────────────────────────────────
 export class AnalyzerService {
   async listSubjects(semester?: number) {
@@ -147,36 +213,69 @@ export class AnalyzerService {
   async generateRoadmap(subjectId: string) {
     const meta = await analyzerRepository.subjectMeta(subjectId);
     if (!meta) return null;
-    const chunks = await analyzerRepository.sampleChunks(subjectId, 6, 50);
-    if (chunks.length === 0) {
+    if ((await analyzerRepository.chunkCount(subjectId)) === 0) {
       return { subject: meta, units: [], generatedAt: null, model: null, status: 'none' as const };
     }
-    const context = chunks
-      .map((c) => `${c.unit != null ? `[Unit ${c.unit}] ` : ''}${c.content}`)
-      .join('\n---\n')
-      .slice(0, 9000);
 
-    const sys = `You are an expert tutor building a study roadmap STRICTLY from a subject's own lecture notes.
-Output ONLY JSON of this exact shape:
-{"units":[{"title":"...","summary":"...","topics":[{"title":"...","subtopics":["...","..."]}]}]}
-Rules:
-- Derive units, topics and subtopics ONLY from the provided notes; never invent material that isn't present.
-- Order from foundational to advanced.
-- 3-8 units; each 2-6 topics; each 2-6 subtopics. Keep titles concise.`;
-    const user = `Subject: ${meta.name} (Semester ${meta.semester}).
+    let units: RUnit[] = [];
+
+    // Preferred: per-unit generation. The notes carry unit numbers, so we build
+    // ONE unit at a time from that unit's own notes — this guarantees the roadmap
+    // matches the real unit structure (fixes "only 1-2 of 5 units generated").
+    const unitNums = await analyzerRepository.unitNumbers(subjectId);
+    if (unitNums.length >= 2) {
+      for (const n of unitNums) {
+        const chunks = await analyzerRepository.chunksForUnit(subjectId, n, 12);
+        if (!chunks.length) continue;
+        const ctx = chunks.join('\n---\n').slice(0, 7000);
+        const sys = `You extract a study roadmap for ONE unit of "${meta.name}" from its lecture notes.
+Output ONLY JSON: {"title":"the unit's theme","summary":"1-2 line overview","topics":[{"title":"...","subtopics":["...","..."]}]}.
+Use ONLY the notes; do not invent. Produce 3-6 topics; each with 2-6 subtopics.`;
+        const user = `Unit ${n} notes:\n${ctx}\n\nReturn the unit JSON.`;
+        try {
+          const raw = await chat(
+            [
+              { role: 'system', content: sys },
+              { role: 'user', content: user },
+            ],
+            { schema: UNIT_SCHEMA, temperature: 0.2, numCtx: 6144, timeoutMs: 180_000 },
+          );
+          const u = normalizeOneUnit(raw, n);
+          if (u) units.push(u);
+        } catch {
+          /* skip a failed unit, keep the rest */
+        }
+      }
+    }
+
+    // Fallback: notes have no usable unit tags → single holistic generation.
+    if (units.length === 0) {
+      const chunks = await analyzerRepository.sampleChunks(subjectId, 6, 50);
+      if (chunks.length === 0) {
+        return { subject: meta, units: [], generatedAt: null, model: null, status: 'none' as const };
+      }
+      const context = chunks
+        .map((c) => `${c.unit != null ? `[Unit ${c.unit}] ` : ''}${c.content}`)
+        .join('\n---\n')
+        .slice(0, 9000);
+      const sys = `You are an expert tutor building a study roadmap STRICTLY from a subject's own lecture notes.
+Output ONLY JSON: {"units":[{"title":"...","summary":"...","topics":[{"title":"...","subtopics":["...","..."]}]}]}
+Rules: derive ONLY from the notes; never invent; order foundational→advanced; produce 4-8 units; each 2-6 topics; each 2-6 subtopics.`;
+      const user = `Subject: ${meta.name} (Semester ${meta.semester}).
 NOTES EXCERPTS:
 ${context}
 
 Return the roadmap JSON now.`;
+      const raw = await chat(
+        [
+          { role: 'system', content: sys },
+          { role: 'user', content: user },
+        ],
+        { schema: ROADMAP_SCHEMA, temperature: 0.2, numCtx: 8192, timeoutMs: 240_000 },
+      );
+      units = normalizeUnits(extractJson(raw) ?? (() => { try { return JSON.parse(raw); } catch { return null; } })());
+    }
 
-    const raw = await chat(
-      [
-        { role: 'system', content: sys },
-        { role: 'user', content: user },
-      ],
-      { schema: ROADMAP_SCHEMA, temperature: 0.2, numCtx: 8192, timeoutMs: 240_000 },
-    );
-    let units = normalizeUnits(extractJson(raw) ?? (() => { try { return JSON.parse(raw); } catch { return null; } })());
     if (!units.length) throw new Error('roadmap generation produced no usable units');
     await analyzerRepository.saveRoadmap(subjectId, { units }, env.ollamaChatModel);
     return {
