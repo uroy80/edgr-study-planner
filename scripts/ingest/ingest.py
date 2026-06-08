@@ -39,7 +39,8 @@ WATERMARK = re.compile(r"(lOMoARcPSD|Downloaded by|studocu|coursehero|scanned by
 
 
 def clean(t):
-    return " ".join((t or "").split())
+    # Strip NUL (0x00) — Postgres TEXT can't store it and psycopg2 rejects it.
+    return " ".join((t or "").replace("\x00", " ").split())
 
 
 def strip_wm(t):
@@ -132,17 +133,22 @@ def main():
         if not os.path.exists(path):
             continue
         for ci, ck in enumerate(chunkify(extract(path))):
+            ck = ck.replace("\x00", " ")
             try:
                 vec = embed(ck)
             except Exception as e:
                 print(f"  embed error: {e}", flush=True)
                 continue
-            cur.execute(
-                """INSERT INTO note_chunks (subject_id, material_id, unit, chunk_index, content, embedding)
-                   VALUES (%s,%s,%s,%s,%s,%s::vector)""",
-                (sid, mid, unit, ci, ck, "[" + ",".join(map(str, vec)) + "]"),
-            )
-            total += 1
+            try:
+                cur.execute(
+                    """INSERT INTO note_chunks (subject_id, material_id, unit, chunk_index, content, embedding)
+                       VALUES (%s,%s,%s,%s,%s,%s::vector)""",
+                    (sid, mid, unit, ci, ck, "[" + ",".join(map(str, vec)) + "]"),
+                )
+                total += 1
+            except Exception as e:
+                conn.rollback()
+                print(f"  insert error: {e}", flush=True)
         conn.commit()
         if idx % 20 == 0:
             print(f"  {idx}/{len(rows)} notes · {total} chunks · {time.time()-t0:.0f}s", flush=True)
