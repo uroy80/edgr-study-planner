@@ -294,42 +294,29 @@ Return the roadmap JSON now.`;
 
     const qvec = await embedText(q);
     const chunks = await analyzerRepository.topChunks(subjectId, toVectorLiteral(qvec), 8);
-    if (chunks.length === 0) {
-      return {
-        answer: `This subject's notes aren't indexed yet, so I can't answer from them.`,
-        citations: [],
-      };
-    }
-
-    // Relevance gate — if even the closest note is far from the question, it's
-    // off-topic or not covered. Refuse instead of hallucinating. (cosine dist)
-    const best = Math.min(...chunks.map((c) => c.distance));
-    if (best > 0.85) {
-      return {
-        answer: `I can only help with **${meta.name}** study questions answered from its notes — and I couldn't find anything relevant in them. Try asking about a topic from this subject.`,
-        citations: [],
-      };
-    }
 
     const context = chunks
       .map((c, i) => `[${i + 1}] (${c.title}${c.unit != null ? `, Unit ${c.unit}` : ''})\n${c.content}`)
       .join('\n\n')
       .slice(0, 12000);
 
-    const sys = `You are a focused study assistant for the subject "${meta.name}".
-STRICT RULES:
-- Answer ONLY academic questions about "${meta.name}", using ONLY the NOTES excerpts below.
-- If the question is not a study question about this subject (small talk, other domains, personal/general questions, current events, coding help unrelated to the notes, etc.), refuse with exactly: "I can only help with ${meta.name} study questions based on the notes."
-- If it IS a study question but the answer is not in the excerpts, say you couldn't find it in the notes. NEVER use outside knowledge.
-- When you do answer: be clear, accurate and reasonably thorough; explain step by step where helpful, and cite the excerpt numbers you used like [1], [2].`;
-    const user = `NOTES EXCERPTS:\n${context}\n\nQUESTION: ${q}`;
+    const sys = `You are an expert, genuinely helpful tutor for the university subject "${meta.name}".
+Help the student learn THIS subject well:
+- Explain concepts clearly, solve problems step by step, and WRITE complete, correct example code / programs / derivations / worked solutions whenever they help. For programming and technical subjects this is expected — give real, runnable sample code.
+- Use the NOTES excerpts below as your primary reference, but you MAY apply standard, correct knowledge of "${meta.name}" to give a complete, useful answer (a working sample program, a full derivation, extra examples) as long as it stays within this subject.
+- Cite note excerpts like [1], [2] when you draw directly from them (optional for general examples).
+
+SCOPE — decline ONLY if the question is clearly NOT about "${meta.name}" or studying it (general chit-chat, unrelated domains, personal or current-events questions). Then reply briefly: "I'm your ${meta.name} study assistant — ask me anything about this subject." NEVER decline a legitimate ${meta.name} study request, including asks for sample code, programs, problems, proofs, or explanations — answer those fully.`;
+    const user = chunks.length
+      ? `NOTES EXCERPTS:\n${context}\n\nQUESTION: ${q}`
+      : `(No notes are indexed for this subject yet. If the question is about ${meta.name}, answer it well from standard subject knowledge; otherwise decline per the scope rule.)\n\nQUESTION: ${q}`;
 
     const answer = await chat(
       [
         { role: 'system', content: sys },
         { role: 'user', content: user },
       ],
-      { temperature: 0.2, numCtx: 8192, timeoutMs: 240_000 },
+      { temperature: 0.35, numCtx: 8192, timeoutMs: 240_000 },
     );
 
     const seen = new Set<string>();
